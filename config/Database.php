@@ -7,7 +7,6 @@ use PDOException;
 class Database {
     private static $instance = null;
     private $conn;
-
     private function __construct() {
         $config = require __DIR__ . '/../../config/database.php';
         try {
