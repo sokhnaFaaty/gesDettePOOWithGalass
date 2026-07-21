@@ -1,5 +1,5 @@
 {
-    "name": "user/ges-dette-poo",
+    "name": "home-pc/ges-dette-poo-with-galass",
     "autoload": {
         "psr-4": {
             "App\\": "src/"
@@ -7,8 +7,8 @@
     },
     "authors": [
         {
-            "name": "nexuusdev",
-            "email": "mamefat2004@gmail.com"
+            "name": "ngd",
+            "email": "ndeyegalassdiagne30@gmail.com"
         }
     ],
     "require": {}
