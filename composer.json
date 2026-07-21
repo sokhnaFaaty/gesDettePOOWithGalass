@@ -2,7 +2,7 @@
     "name": "user/ges-dette-poo",
     "autoload": {
         "psr-4": {
-            "User\\GesDettePoo\\": "src/"
+            "App\\": "src/"
         }
     },
     "authors": [
