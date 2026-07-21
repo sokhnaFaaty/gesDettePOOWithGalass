@@ -3,54 +3,63 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\UtilisateurModel;
+use App\Models\DetteModel;
 
 class UtilisateurController extends Controller {
     private $model;
+    private $detteModel;
 
     public function __construct() {
+        parent::__construct();
         $this->model = new UtilisateurModel();
+        $this->detteModel = new DetteModel();
     }
 
-  
-
     /**
-     * Liste des clients avec recherche par nom et par état.
-     * Correspond à la maquette "Liste de clients".
+     * Liste des clients avec recherche par nom et par état, paginée.
+     * Correspond à la maquette "Liste de clients". Réservé à l'admin.
      */
     public function index() {
+        $this->requireAuth('admin');
+
         // On récupère les critères de recherche envoyés par le formulaire (méthode GET)
         $nom  = $_GET['nom']  ?? '';
         $etat = $_GET['etat'] ?? '';
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
 
-        // Si un critère est présent, on filtre ; sinon on prend tous les clients
-        if ($nom !== '' || $etat !== '') {
-            $clients = $this->model->search($nom, $etat);
-        } else {
-            $clients = $this->model->allClients();
-        }
+        $clients = $this->model->search($nom, $etat, $page, $perPage);
+        $total   = $this->model->countSearch($nom, $etat);
+        $totalPages = max(1, (int) ceil($total / $perPage));
 
-        $this->view('clients/index', [
-            'clients' => $clients,
-            'nom'     => $nom,
-            'etat'    => $etat,
+        $this->view('admin/index', [
+            'clients'    => $clients,
+            'nom'        => $nom,
+            'etat'       => $etat,
+            'page'       => $page,
+            'totalPages' => $totalPages,
         ]);
     }
 
     /**
-     * Affiche le formulaire de création d'un client.
+     * Affiche le formulaire de création d'un client. Réservé à l'admin.
      */
     public function create() {
-        $this->view('clients/create');
+        $this->requireAuth('admin');
+        $this->view('admin/create');
     }
 
     /**
-     * Enregistre le nouveau client (traitement du formulaire).
+     * Enregistre le nouveau client (traitement du formulaire). Réservé à l'admin.
      */
     public function store() {
+        $this->requireAuth('admin');
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Vérifie que l'email n'est pas déjà utilisé
             if ($this->model->findByEmail($_POST['email'])) {
-                die("Cet email est déjà utilisé.");
+                $this->view('admin/create', ['erreur' => "Cet email est déjà utilisé."]);
+                return;
             }
 
             $this->model->create([
@@ -67,20 +76,24 @@ class UtilisateurController extends Controller {
     }
 
     /**
-     * Affiche le formulaire d'édition d'un client.
+     * Affiche le formulaire d'édition d'un client. Réservé à l'admin.
      */
     public function edit($id) {
+        $this->requireAuth('admin');
+
         $client = $this->model->find($id);
         if (!$client) {
             die("Client introuvable.");
         }
-        $this->view('clients/edit', ['client' => $client]);
+        $this->view('admin/edit', ['client' => $client]);
     }
 
     /**
-     * Enregistre les modifications d'un client.
+     * Enregistre les modifications d'un client. Réservé à l'admin.
      */
     public function update($id) {
+        $this->requireAuth('admin');
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->model->update($id, [
                 'nom'         => $_POST['nom'],
@@ -94,19 +107,57 @@ class UtilisateurController extends Controller {
     }
 
     /**
-     * Supprime un client.
+     * Supprime un client. Réservé à l'admin.
      */
     public function delete($id) {
+        $this->requireAuth('admin');
         $this->model->delete($id);
         $this->redirect('/clients');
     }
 
-  
+    /**
+     * Fiche client : infos du client + liste de ses dettes. Réservé à l'admin
+     * (correspond au clic "voir fiche" depuis la liste des clients).
+     */
+    public function show($id) {
+        $this->requireAuth('admin');
+
+        $client = $this->model->find($id);
+        if (!$client) {
+            die("Client introuvable.");
+        }
+        $dettes = $this->detteModel->findByUtilisateur($id);
+
+        $this->view('admin/show', [
+            'client' => $client,
+            'dettes' => $dettes,
+        ]);
+    }
+
+    /**
+     * Fiche du client connecté : ses propres infos + ses propres dettes.
+     * Réservé au rôle client.
+     */
+    public function profil() {
+        $user = $this->requireAuth('client');
+
+        $client = $this->model->find($user['id']);
+        $dettes = $this->detteModel->findByUtilisateur($user['id']);
+
+        $this->view('client/dashboard', [
+            'client' => $client,
+            'dettes' => $dettes,
+        ]);
+    }
 
     /**
      * Affiche le formulaire de connexion.
      */
     public function login() {
+        // Déjà connecté : direction la page qui correspond à son rôle
+        if (!empty($_SESSION['user'])) {
+            $this->redirect($_SESSION['user']['role'] === 'admin' ? '/clients' : '/profil');
+        }
         $this->view('auth/login');
     }
 
@@ -121,14 +172,14 @@ class UtilisateurController extends Controller {
             $user = $this->model->verifyLogin($email, $motDePasse);
 
             if ($user) {
-                // On démarre la session et on y stocke l'utilisateur connecté
-                session_start();
+                // On stocke l'utilisateur connecté dans la session
                 $_SESSION['user'] = [
                     'id'    => $user['id'],
                     'nom'   => $user['nom'],
+                    'prenom'=> $user['prenom'],
                     'role'  => $user['role'],
                 ];
-                $this->redirect('/clients');
+                $this->redirect($user['role'] === 'admin' ? '/clients' : '/profil');
             } else {
                 $this->view('auth/login', ['erreur' => 'Email ou mot de passe incorrect.']);
             }
@@ -139,7 +190,7 @@ class UtilisateurController extends Controller {
      * Déconnexion.
      */
     public function logout() {
-        session_start();
+        $_SESSION = [];
         session_destroy();
         $this->redirect('/login');
     }

@@ -9,14 +9,44 @@ class UtilisateurModel extends Model {
     protected $table = 'utilisateur';
 
     /**
-     * Recherche des clients par nom et/ou par état (etat_client).
+     * Recherche des clients par nom et/ou par état (etat_client), avec pagination.
      * Les deux critères sont optionnels : on filtre seulement ce qui est fourni.
      */
-    public function search($nom = '', $etat = '') {
-        $sql = "SELECT * FROM {$this->table} WHERE role = 'client'";
+    public function search($nom = '', $etat = '', $page = 1, $perPage = 10) {
+        [$where, $params] = $this->buildFilter($nom, $etat);
+
+        $offset = max(0, ($page - 1) * $perPage);
+
+        $sql = "SELECT * FROM {$this->table} WHERE {$where} ORDER BY nom ASC LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', (int) $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Compte le nombre total de clients correspondant aux critères (pour la pagination).
+     */
+    public function countSearch($nom = '', $etat = '') {
+        [$where, $params] = $this->buildFilter($nom, $etat);
+
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} WHERE {$where}");
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Construit la clause WHERE + les paramètres communs à search() et countSearch().
+     */
+    private function buildFilter($nom, $etat) {
+        $sql = "role = 'client'";
         $params = [];
 
-        // Filtre par nom (recherche partielle, insensible à la casse avec ILIKE)
+        // Filtre par nom (recherche partielle, insensible à la casse avec ILIKE - propre à PostgreSQL)
         if (!empty($nom)) {
             $sql .= " AND nom ILIKE :nom";
             $params[':nom'] = '%' . $nom . '%';
@@ -28,20 +58,7 @@ class UtilisateurModel extends Model {
             $params[':etat'] = $etat;
         }
 
-        $sql .= " ORDER BY nom ASC";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Récupère uniquement les utilisateurs ayant le rôle 'client'.
-     */
-    public function allClients() {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE role = 'client' ORDER BY nom ASC");
-        $stmt->execute();
-        return $stmt->fetchAll();
+        return [$sql, $params];
     }
 
     /**

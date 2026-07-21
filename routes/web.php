@@ -1,18 +1,22 @@
 <?php
 // Table de routage de l'application de gestion de dettes
 return [
-    // Page d'accueil -> liste des clients
-    '/'                 => ['App\Controllers\UtilisateurController', 'index'],
+    // Page d'accueil -> connexion
+    '/'                 => ['App\Controllers\UtilisateurController', 'login'],
 
-    // -------- CLIENTS (CRUD + recherche) --------
+    // -------- CLIENTS (CRUD + recherche) - réservé à l'admin --------
     '/clients'          => ['App\Controllers\UtilisateurController', 'index'],
     '/clients/create'   => ['App\Controllers\UtilisateurController', 'create'],
     '/clients/store'    => ['App\Controllers\UtilisateurController', 'store'],
     '/clients/edit'     => ['App\Controllers\UtilisateurController', 'edit'],
     '/clients/update'   => ['App\Controllers\UtilisateurController', 'update'],
     '/clients/delete'   => ['App\Controllers\UtilisateurController', 'delete'],
+    '/clients/show'     => ['App\Controllers\UtilisateurController', 'show'],
 
-    // -------- CONNEXION / ADMIN --------
+    // -------- ESPACE CLIENT --------
+    '/profil'           => ['App\Controllers\UtilisateurController', 'profil'],
+
+    // -------- CONNEXION --------
     '/login'            => ['App\Controllers\UtilisateurController', 'login'],
     '/authenticate'     => ['App\Controllers\UtilisateurController', 'authenticate'],
     '/logout'           => ['App\Controllers\UtilisateurController', 'logout'],
