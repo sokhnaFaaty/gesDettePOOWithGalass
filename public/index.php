@@ -1,14 +1,19 @@
 <?php
-// 1. Démarrer la session
+// Démarrer la session
 session_start();
 
-// 2. Définir les constantes 
+// Définir les constantes
 define('ROOT', dirname(__DIR__) . '/');
-define('WEBROOT', '/gesDette-poo/public/'); 
-define('DEFAULT_CONTROLLER', 'Client');
-define('DEFAULT_ACTION', 'index');
+define('WEBROOT', '/gesDette-poo/public/'); // ⚠️ Adapter selon votre structure
 
-// 3. Autoloader simple
+// Déterminer BASE_URL automatiquement
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+$baseDir = dirname($scriptName);
+$baseDir = str_replace('\\', '/', $baseDir);
+$baseDir = rtrim($baseDir, '/');
+define('BASE_URL', $baseDir);
+
+// Autoloader
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
     $base_dir = ROOT . 'app/';
@@ -24,10 +29,10 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// 4. Charger les helpers
+// Charger les helpers
 require_once ROOT . 'app/helpers/functions.php';
 
-// 5. Récupérer et nettoyer l'URL
+// Récupérer et nettoyer l'URL
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $path = parse_url($requestUri, PHP_URL_PATH);
 
@@ -37,14 +42,13 @@ $path = substr($path, strlen($baseDir));
 $path = '/' . trim($path, '/');
 if ($path === '') $path = '/';
 
-// 6. Charger les routes
+// Charger les routes
 $routes = require_once ROOT . 'routes/web.php';
 
-// 7. Router
+// Router
 $matched = false;
 
 foreach ($routes as $route => $handler) {
-    // Transformer :id en regex
     $pattern = '#^' . preg_replace('/\/:([a-z]+)/', '/([^/]+)', $route) . '$#';
     
     if (preg_match($pattern, $path, $matches)) {
@@ -58,7 +62,7 @@ foreach ($routes as $route => $handler) {
     }
 }
 
-// 8. Si aucune route trouvée
+// Si aucune route trouvée
 if (!$matched) {
     header('HTTP/1.0 404 Not Found');
     echo "<!DOCTYPE html>
@@ -67,7 +71,7 @@ if (!$matched) {
     <body>
         <h1>404 Not Found</h1>
         <p>La page demandée n'existe pas.</p>
-        <p><a href='" . WEBROOT . "clients'>Retour à l'accueil</a></p>
+        <p><a href='" . BASE_URL . "/clients'>Retour à l'accueil</a></p>
     </body>
     </html>";
 }
