@@ -3,8 +3,8 @@
 return [
     'host'     => '127.0.0.1',
     'port'     => '5432',
-    'db_name'  => 'gesdette',
+    'db_name'  => 'gestion_de_dette',
     'username' => 'postgres',
-    'password' => '',
+    'password' => 'ngd',
     'charset'  => 'UTF8',
 ];

@@ -17,7 +17,7 @@ class UtilisateurController extends Controller {
 
     /**
      * Liste des clients avec recherche par nom et par état, paginée.
-     * Correspond à la maquette "Liste de clients". Réservé à l'admin.
+     * Affiche "Liste de clients". Réservé à l'admin.
      */
     public function index() {
         $this->requireAuth('admin');

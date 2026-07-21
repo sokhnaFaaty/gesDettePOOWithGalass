@@ -35,10 +35,11 @@ CREATE TABLE dette (
 );
 
 -- 4. Quelques données de test (facultatif mais pratique pour la démo)
+-- ATTENTION : mots de passe stockés EN CLAIR (uniquement pour tests locaux, jamais en production)
 INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, telephone, role, etat_client) VALUES
-('Thiam',  'Ben',   'ben.thiam@mail.sn',     '$2y$10$exempleHashAremplacer', '770000001', 'client', 'non solvable'),
-('Diagne', 'Penda', 'penda.diagne@mail.sn',  '$2y$10$exempleHashAremplacer', '770000002', 'client', 'solvable'),
-('Sow',    'Awa',   'awa.sow@mail.sn',       '$2y$10$exempleHashAremplacer', '770000003', 'admin',  'nouveau');
+('Thiam',  'Ben',   'ben.thiam@mail.sn',     'ben1234',   '770000001', 'client', 'non solvable'),
+('Diagne', 'Penda', 'penda.diagne@mail.sn',  'penda1234', '770000002', 'client', 'solvable'),
+('Sow',    'Awa',   'awa.sow@mail.sn',       'awa1234',   '770000003', 'admin',  'nouveau');
 
 INSERT INTO dette (numero, montant, date, etat_dette, id_utilisateur) VALUES
 ('D001', 55200.00, '2025-07-15', 'soldee',     1),

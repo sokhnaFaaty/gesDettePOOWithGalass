@@ -76,8 +76,7 @@ class UtilisateurModel extends Model {
             ':nom'          => $data['nom'],
             ':prenom'       => $data['prenom'],
             ':email'        => $data['email'],
-            // On hache le mot de passe : on ne le stocke JAMAIS en clair
-            ':mot_de_passe' => password_hash($data['mot_de_passe'], PASSWORD_DEFAULT),
+            ':mot_de_passe' => $data['mot_de_passe'],
             ':telephone'    => $data['telephone'] ?? null,
             ':etat_client'  => $data['etat_client'] ?? 'nouveau',
         ]);
@@ -121,8 +120,8 @@ class UtilisateurModel extends Model {
      */
     public function verifyLogin($email, $motDePasse) {
         $user = $this->findByEmail($email);
-        // password_verify compare le mot de passe saisi au hash stocké
-        if ($user && password_verify($motDePasse, $user['mot_de_passe'])) {
+        // ATTENTION : comparaison en clair (tests locaux uniquement, jamais en production)
+        if ($user && $motDePasse === $user['mot_de_passe']) {
             return $user;
         }
         return false;
