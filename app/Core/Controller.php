@@ -1,23 +1,40 @@
 <?php
 namespace App\Core;
 
- class Controller {
-    // Render a view and pass data to it
+class Controller {
+    /**
+     * Affiche une vue avec les données
+     */
     protected function view($view, $data = []) {
-        // Extract data to make variables available in the view
+        // Extraire les données pour les rendre disponibles dans la vue
         extract($data);
         
-        $viewFile = __DIR__ . '/../../views/' . $view . '.php';
+        $viewFile = ROOT . 'views/' . $view . '.php';
         if (file_exists($viewFile)) {
             require_once $viewFile;
         } else {
-            die("View '{$view}' not found.");
+            die("Vue '{$view}' introuvable.");
         }
     }
 
-    // Redirect to a specific URL
+    /**
+     * Redirige vers une URL spécifique
+     */
     protected function redirect($url) {
-        header("Location: " . BASE_URL . $url);
+        // Utiliser BASE_URL si défini, sinon WEBROOT
+        $base = defined('BASE_URL') ? BASE_URL : WEBROOT;
+        header("Location: " . $base . '/' . ltrim($url, '/'));
         exit;
+    }
+    
+    /**
+     * Redirige vers un contrôleur/action
+     */
+    protected function redirectTo($controller, $action = 'index', $params = []) {
+        $url = $controller . '/' . $action;
+        if (!empty($params)) {
+            $url .= '/' . implode('/', $params);
+        }
+        $this->redirect($url);
     }
 }

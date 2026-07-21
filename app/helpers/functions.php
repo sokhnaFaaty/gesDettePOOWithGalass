@@ -2,11 +2,16 @@
 // 1. Démarrer la session
 session_start();
 
-// 2. Définir les constantes 
+// 2. Définir les constantes
 define('ROOT', dirname(__DIR__) . '/');
 define('WEBROOT', '/gesDette-poo/public/'); 
-define('DEFAULT_CONTROLLER', 'Client');
-define('DEFAULT_ACTION', 'index');
+
+// Déterminer BASE_URL automatiquement
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+$baseDir = dirname($scriptName);
+$baseDir = str_replace('\\', '/', $baseDir);
+$baseDir = rtrim($baseDir, '/');
+define('BASE_URL', $baseDir);
 
 // 3. Autoloader simple
 spl_autoload_register(function ($class) {
@@ -67,7 +72,7 @@ if (!$matched) {
     <body>
         <h1>404 Not Found</h1>
         <p>La page demandée n'existe pas.</p>
-        <p><a href='" . WEBROOT . "clients'>Retour à l'accueil</a></p>
+        <p><a href='" . BASE_URL . "/clients'>Retour à l'accueil</a></p>
     </body>
     </html>";
 }
