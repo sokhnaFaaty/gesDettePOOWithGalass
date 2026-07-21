@@ -1,0 +1,15 @@
+{
+    "name": "user/ges-dette-poo",
+    "autoload": {
+        "psr-4": {
+            "User\\GesDettePoo\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "nexuusdev",
+            "email": "mamefat2004@gmail.com"
+        }
+    ],
+    "require": {}
+}
