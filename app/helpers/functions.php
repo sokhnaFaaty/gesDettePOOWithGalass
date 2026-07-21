@@ -1,78 +1,154 @@
 <?php
-// 1. Démarrer la session
-session_start();
 
-// 2. Définir les constantes
-define('ROOT', dirname(__DIR__) . '/');
-define('WEBROOT', '/gesDette-poo/public/'); 
+/**
+ * Fonction de débogage
+ */
+function dd($data) {
+    echo '<pre>';
+    var_dump($data);
+    echo '</pre>';
+    die('Arrêt du débogage');
+}
 
-// Déterminer BASE_URL automatiquement
-$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-$baseDir = dirname($scriptName);
-$baseDir = str_replace('\\', '/', $baseDir);
-$baseDir = rtrim($baseDir, '/');
-define('BASE_URL', $baseDir);
-
-// 3. Autoloader simple
-spl_autoload_register(function ($class) {
-    $prefix = 'App\\';
-    $base_dir = ROOT . 'app/';
-    
-    if (strncmp($prefix, $class, strlen($prefix)) !== 0) {
-        return;
-    }
-    
-    $file = $base_dir . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
-    
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
-
-// 4. Charger les helpers
-require_once ROOT . 'app/helpers/functions.php';
-
-// 5. Récupérer et nettoyer l'URL
-$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-$path = parse_url($requestUri, PHP_URL_PATH);
-
-// Enlever le dossier public de l'URL
-$baseDir = dirname($_SERVER['SCRIPT_NAME']);
-$path = substr($path, strlen($baseDir));
-$path = '/' . trim($path, '/');
-if ($path === '') $path = '/';
-
-// 6. Charger les routes
-$routes = require_once ROOT . 'routes/web.php';
-
-// 7. Router
-$matched = false;
-
-foreach ($routes as $route => $handler) {
-    // Transformer :id en regex
-    $pattern = '#^' . preg_replace('/\/:([a-z]+)/', '/([^/]+)', $route) . '$#';
-    
-    if (preg_match($pattern, $path, $matches)) {
-        $controller = new $handler[0]();
-        $action = $handler[1];
-        $params = array_slice($matches, 1);
-        
-        $controller->$action(...$params);
-        $matched = true;
-        break;
+/**
+ * Exécute une requête SELECT
+ */
+function executeSelect($sql, $params = [], $single = false) {
+    try {
+        $db = App\Core\Database::getInstance()->getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $single ? $stmt->fetch(PDO::FETCH_ASSOC) : $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        die("Erreur SQL: " . $e->getMessage());
     }
 }
 
-// 8. Si aucune route trouvée
-if (!$matched) {
-    header('HTTP/1.0 404 Not Found');
-    echo "<!DOCTYPE html>
-    <html>
-    <head><title>404 - Page non trouvée</title></head>
-    <body>
-        <h1>404 Not Found</h1>
-        <p>La page demandée n'existe pas.</p>
-        <p><a href='" . BASE_URL . "/clients'>Retour à l'accueil</a></p>
-    </body>
-    </html>";
+/**
+ * Exécute une requête d'écriture (INSERT, UPDATE, DELETE)
+ */
+function executeUpdate($sql, $params = []) {
+    try {
+        $db = App\Core\Database::getInstance()->getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->rowCount();
+    } catch (PDOException $e) {
+        die("Erreur SQL: " . $e->getMessage());
+    }
+}
+
+/**
+ * Exécute un INSERT et retourne l'ID
+ */
+function executeInsert($sql, $params = []) {
+    try {
+        $db = App\Core\Database::getInstance()->getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $db->lastInsertId();
+    } catch (PDOException $e) {
+        die("Erreur SQL: " . $e->getMessage());
+    }
+}
+
+/**
+ * Génère une URL avec WEBROOT
+ */
+function url($path = '') {
+    return WEBROOT . ltrim($path, '/');
+}
+
+/**
+ * Génère un chemin pour un contrôleur/action
+ */
+function path($controller, $action = 'index', $params = []) {
+    $url = $controller . '/' . $action;
+    if (!empty($params)) {
+        $url .= '/' . implode('/', $params);
+    }
+    return url($url);
+}
+
+/**
+ * Redirige vers une URL
+ */
+function redirect($url) {
+    header('Location: ' . url($url));
+    exit();
+}
+
+/**
+ * Redirige vers un contrôleur/action
+ */
+function redirectTo($controller, $action = 'index', $params = []) {
+    redirect($controller . '/' . $action . (!empty($params) ? '/' . implode('/', $params) : ''));
+}
+
+/**
+ * Charge une vue avec layout
+ */
+function view($view, $data = [], $layout = 'base') {
+    extract($data);
+    
+    ob_start();
+    require_once ROOT . 'views/' . $view . '.php';
+    $content = ob_get_clean();
+    
+    $layoutFile = ROOT . 'views/layouts/' . $layout . '.layout.php';
+    if (file_exists($layoutFile)) {
+        require_once $layoutFile;
+    } else {
+        echo $content;
+    }
+}
+
+/**
+ * Vérifie si l'utilisateur est connecté
+ */
+function isConnected() {
+    return isset($_SESSION['user']);
+}
+
+/**
+ * Vérifie l'authentification
+ */
+function auth() {
+    if (!isConnected()) {
+        redirectTo('auth', 'login');
+    }
+}
+
+/**
+ * Vérifie le rôle
+ */
+function hasRole($role) {
+    return isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === $role;
+}
+
+/**
+ * Messages flash
+ */
+function flash($key, $message = null) {
+    if ($message === null) {
+        if (isset($_SESSION[$key])) {
+            $msg = $_SESSION[$key];
+            unset($_SESSION[$key]);
+            return $msg;
+        }
+        return null;
+    }
+    $_SESSION[$key] = $message;
+}
+
+function hasFlash($key) {
+    return isset($_SESSION[$key]);
+}
+
+/**
+ * Compte les enregistrements
+ */
+function countTable($table) {
+    $result = executeSelect("SELECT COUNT(*) as total FROM $table", [], true);
+    return $result ? $result['total'] : 0;
 }
