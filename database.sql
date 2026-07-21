@@ -1,42 +1,46 @@
--- Script de création de la base de données
--- Vous pouvez l'importer directement dans phpMyAdmin ou via la ligne de commande MySQL :
--- mysql -u root -p < database.sql
+-- ============================================
+--  Base de données : gestion de dettes
+--  SGBD : PostgreSQL
+-- ============================================
 
-CREATE DATABASE IF NOT EXISTS gesclasse_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE gesclasse_db;
+-- 1. Les types ENUM (correspondent aux «enumeration» du diagramme)
+CREATE TYPE role_utilisateur AS ENUM ('admin', 'client');
+CREATE TYPE etat_client      AS ENUM ('non solvable', 'solvable', 'nouveau');
+CREATE TYPE etat_dette       AS ENUM ('non soldee', 'soldee');
 
-CREATE TABLE IF NOT EXISTS filieres (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    libelle VARCHAR(100) NOT NULL
-) ENGINE=InnoDB;
+-- 2. Table utilisateur (le côté "1")
+CREATE TABLE utilisateur (
+    id           SERIAL PRIMARY KEY,
+    nom          VARCHAR(50)  NOT NULL,
+    prenom       VARCHAR(50)  NOT NULL,
+    email        VARCHAR(100) NOT NULL UNIQUE,
+    mot_de_passe VARCHAR(255) NOT NULL,
+    telephone    VARCHAR(20),
+    role         role_utilisateur NOT NULL DEFAULT 'client',
+    etat_client  etat_client      NOT NULL DEFAULT 'nouveau'
+);
 
-CREATE TABLE IF NOT EXISTS niveaux (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL
-) ENGINE=InnoDB;
+-- 3. Table dette (le côté "0..*", elle porte la clé étrangère)
+CREATE TABLE dette (
+    id             SERIAL PRIMARY KEY,
+    numero         VARCHAR(20)   NOT NULL UNIQUE,
+    montant        NUMERIC(10,2) NOT NULL,
+    date           DATE          NOT NULL DEFAULT CURRENT_DATE,
+    etat_dette     etat_dette    NOT NULL DEFAULT 'non soldee',
+    id_utilisateur INTEGER       NOT NULL,
+    CONSTRAINT fk_dette_utilisateur
+        FOREIGN KEY (id_utilisateur)
+        REFERENCES utilisateur(id)
+        ON DELETE CASCADE
+);
 
-CREATE TABLE IF NOT EXISTS classes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    filiere_id INT NOT NULL,
-    niveau_id INT NOT NULL,
-    FOREIGN KEY (filiere_id) REFERENCES filieres(id) ON DELETE CASCADE,
-    FOREIGN KEY (niveau_id) REFERENCES niveaux(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+-- 4. Quelques données de test (facultatif mais pratique pour la démo)
+INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, telephone, role, etat_client) VALUES
+('Thiam',  'Ben',   'ben.thiam@mail.sn',     '$2y$10$exempleHashAremplacer', '770000001', 'client', 'non solvable'),
+('Diagne', 'Penda', 'penda.diagne@mail.sn',  '$2y$10$exempleHashAremplacer', '770000002', 'client', 'solvable'),
+('Sow',    'Awa',   'awa.sow@mail.sn',       '$2y$10$exempleHashAremplacer', '770000003', 'admin',  'nouveau');
 
--- Insertion de données de test
-INSERT INTO filieres (libelle) VALUES 
-('Génie Logiciel'), 
-('Réseaux et Télécoms'), 
-('Data Science');
-
-INSERT INTO niveaux (nom) VALUES 
-('Licence 1'), 
-('Licence 2'), 
-('Licence 3'), 
-('Master 1'), 
-('Master 2');
-
-INSERT INTO classes (nom, filiere_id, niveau_id) VALUES 
-('L2 GL', 1, 2), 
-('L3 RT', 2, 3);
+INSERT INTO dette (numero, montant, date, etat_dette, id_utilisateur) VALUES
+('D001', 55200.00, '2025-07-15', 'soldee',     1),
+('D002', 23450.00, '2025-07-12', 'non soldee', 1),
+('D003', 12000.00, '2025-07-18', 'non soldee', 2);
