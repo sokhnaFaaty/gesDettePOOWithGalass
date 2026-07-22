@@ -26,7 +26,7 @@ class UtilisateurController extends Controller {
         $nom  = $_GET['nom']  ?? '';
         $etat = $_GET['etat'] ?? '';
         $page = max(1, (int) ($_GET['page'] ?? 1));
-        $perPage = 10;
+        $perPage = 3;
 
         $clients = $this->model->search($nom, $etat, $page, $perPage);
         $total   = $this->model->countSearch($nom, $etat);

@@ -12,7 +12,7 @@ class UtilisateurModel extends Model {
      * Recherche des clients par nom et/ou par état (etat_client), avec pagination.
      * Les deux critères sont optionnels : on filtre seulement ce qui est fourni.
      */
-    public function search($nom = '', $etat = '', $page = 1, $perPage = 10) {
+    public function search($nom = '', $etat = '', $page = 1, $perPage = 2) {
         [$where, $params] = $this->buildFilter($nom, $etat);
 
         $offset = max(0, ($page - 1) * $perPage);
@@ -38,7 +38,7 @@ class UtilisateurModel extends Model {
         $stmt->execute($params);
         return (int) $stmt->fetchColumn();
     }
-
+ 
     /**
      * Construit la clause WHERE + les paramètres communs à search() et countSearch().
      */
