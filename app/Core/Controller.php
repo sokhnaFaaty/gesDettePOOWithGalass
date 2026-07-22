@@ -1,8 +1,10 @@
 <?php
 namespace App\Core;
 
- class Controller {
-    // Render a view and pass data to it
+class Controller {
+    /**
+     * Affiche une vue avec les données
+     */
     protected function view($view, $data = []) {
         // Extract data to make variables available in the view
         extract($data);
@@ -11,13 +13,15 @@ namespace App\Core;
         if (file_exists($viewFile)) {
             require_once $viewFile;
         } else {
-            die("View '{$view}' not found.");
+            die("Vue '{$view}' introuvable.");
         }
     }
 
     // Redirect to a specific URL
     protected function redirect($url) {
-        header("Location: " . BASE_URL . $url);
+        // Utiliser BASE_URL si défini, sinon WEBROOT
+        $base = defined('BASE_URL') ? BASE_URL : WEBROOT;
+        header("Location: " . $base . '/' . ltrim($url, '/'));
         exit;
     }
 }

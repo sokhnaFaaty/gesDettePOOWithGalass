@@ -1,50 +1,57 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Liste des Filières</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-        h1 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #34495e; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .nav { margin-bottom: 20px; }
-        .nav a { margin-right: 15px; text-decoration: none; color: #34495e; font-weight: bold; }
-        .nav a:hover { color: #2ecc71; }
-    </style>
-</head>
-<body>
-    <div class="nav">
-        <a href="<?= BASE_URL ?>/classes">Classes</a> | 
-        <a href="<?= BASE_URL ?>/filieres">Filières</a> | 
-        <a href="<?= BASE_URL ?>/niveaux">Niveaux</a>
+<?php $title = 'Liste des dettes'; ?>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="fas fa-file-invoice"></i> Dettes</h2>
+    <div>
+        <a href="<?= url('dettes/ajouter') ?>" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvelle dette
+        </a>
+        <a href="<?= url('dettes/non-soldees') ?>" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle"></i> Non soldées
+        </a>
     </div>
+</div>
 
-    <h1>Gestion des Filières</h1>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Libellé</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($filieres)): ?>
-                <?php foreach ($filieres as $filiere): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($filiere['id']) ?></td>
-                        <td><?= htmlspecialchars($filiere['libelle']) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
                 <tr>
-                    <td colspan="2" style="text-align: center; color: #7f8c8d;">Aucune filière enregistrée.</td>
+                    <th>N° Dette</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>État</th>
+                    <th>Actions</th>
                 </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</body>
-</html>
+            </thead>
+            <tbody>
+                <?php foreach ($dettes as $dette): ?>
+                <tr>
+                    <td><?= htmlspecialchars($dette['numero']) ?></td>
+                    <td><?= htmlspecialchars($dette['nom'] . ' ' . $dette['prenom']) ?></td>
+                    <td><?= date('d/m/Y', strtotime($dette['date'])) ?></td>
+                    <td><?= number_format($dette['montant'], 0, ',', ' ') ?> FCFA</td>
+                    <td>
+                        <span class="badge <?= $dette['etat'] == 'soldee' ? 'badge-success' : 'badge-warning' ?>">
+                            <?= $dette['etat'] ?>
+                        </span>
+                    </td>
+                    <td>
+                        <a href="<?= url('dettes/modifier/' . $dette['id']) ?>" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <?php if ($dette['etat'] == 'non_soldee'): ?>
+                            <a href="<?= url('dettes/soldeer/' . $dette['id']) ?>" class="btn btn-success btn-sm">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            <a href="<?= url('dettes/supprimer/' . $dette['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette dette ?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div
