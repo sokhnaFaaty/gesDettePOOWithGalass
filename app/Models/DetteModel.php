@@ -2,74 +2,75 @@
 namespace App\Models;
 
 use App\Core\Model;
+use PDO;
 
 class DetteModel extends Model {
-    protected $table = 'dettes';
-    
-    public function __construct() {
-        parent::__construct();
+    // Schéma partagé : table "dette", clients = utilisateur (role = 'client')
+    protected $table = 'dette';
+
+    /**
+     * Toutes les dettes avec les infos du client (utilisateur), paginées.
+     */
+    public function getAllWithClients($page = 1, $perPage = 5) {
+        $offset = max(0, ($page - 1) * $perPage);
+
+        $sql = "SELECT d.*, u.nom, u.prenom, u.email, u.telephone
+                FROM {$this->table} d
+                JOIN utilisateur u ON d.id_utilisateur = u.id
+                ORDER BY d.date DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', (int) $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
-    
-    // Récupérer toutes les dettes avec infos client
-    public function getAllWithClients() {
-        $sql = "
-            SELECT d.*, c.nom, c.prenom, c.email, c.telephone
-            FROM {$this->table} d
-            JOIN clients c ON d.client_id = c.id
-            ORDER BY d.date DESC
-        ";
-        return executeSelect($sql);
+
+    /**
+     * Nombre total de dettes (pour calculer le nombre de pages).
+     */
+    public function countAll() {
+        return (int) $this->db->query("SELECT COUNT(*) FROM {$this->table}")->fetchColumn();
     }
-    
-    // Récupérer les dettes d'un client
-    public function getByClientId($client_id) {
-        $sql = "
-            SELECT * FROM {$this->table} 
-            WHERE client_id = ? 
-            ORDER BY date DESC
-        ";
-        return executeSelect($sql, [$client_id]);
+
+    /**
+     * Dettes non soldées, paginées.
+     */
+    public function getNonSoldees($page = 1, $perPage = 5) {
+        $offset = max(0, ($page - 1) * $perPage);
+
+        $sql = "SELECT d.*, u.nom, u.prenom
+                FROM {$this->table} d
+                JOIN utilisateur u ON d.id_utilisateur = u.id
+                WHERE d.etat_dette = 'non soldee'
+                ORDER BY d.date DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', (int) $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
-    
-    // Récupérer les dettes non soldées
-    public function getNonSoldees() {
-        $sql = "
-            SELECT d.*, c.nom, c.prenom 
-            FROM {$this->table} d
-            JOIN clients c ON d.client_id = c.id
-            WHERE d.etat = 'non_soldee'
-            ORDER BY d.date DESC
-        ";
-        return executeSelect($sql);
+
+    /**
+     * Nombre de dettes non soldées.
+     */
+    public function countNonSoldees() {
+        return (int) $this->db->query(
+            "SELECT COUNT(*) FROM {$this->table} WHERE etat_dette = 'non soldee'"
+        )->fetchColumn();
     }
-    
-    // Générer un numéro de dette unique
-    public function generateNumero() {
-        $sql = "SELECT MAX(numero) as max_numero FROM {$this->table}";
-        $result = executeSelect($sql, [], true);
-        $max = $result ? $result['max_numero'] : 'DET-0000';
-        $num = intval(substr($max, 4)) + 1;
-        return 'DET-' . str_pad($num, 4, '0', STR_PAD_LEFT);
-    }
-    
-    // Créer une nouvelle dette
-    public function createDette($data) {
-        if (!isset($data['numero']) || empty($data['numero'])) {
-            $data['numero'] = $this->generateNumero();
-        }
-        if (!isset($data['etat'])) {
-            $data['etat'] = 'non_soldee';
-        }
-        if (!isset($data['date'])) {
-            $data['date'] = date('Y-m-d');
-        }
-        
-        return $this->create($data);
-    }
-    
-    // Marquer une dette comme soldée
-    public function marquerSoldee($id) {
-        $sql = "UPDATE {$this->table} SET etat = 'soldee' WHERE id = ?";
-        return executeUpdate($sql, [$id]);
+
+    /**
+     * Dettes d'un client (utilisateur) donné, la plus récente en premier.
+     */
+    public function getByClientId($idUtilisateur) {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM {$this->table} WHERE id_utilisateur = :id ORDER BY date DESC"
+        );
+        $stmt->execute([':id' => $idUtilisateur]);
+        return $stmt->fetchAll();
     }
 }
