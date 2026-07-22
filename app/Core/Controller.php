@@ -3,6 +3,14 @@ namespace App\Core;
 
 class Controller {
     /**
+     * Constructeur de base : permet aux contrôleurs enfants d'appeler
+     * parent::__construct() sans erreur "Cannot call constructor".
+     */
+    public function __construct() {
+        // Rien de particulier pour l'instant.
+    }
+
+    /**
      * Affiche une vue avec les données
      */
     protected function view($view, $data = []) {
