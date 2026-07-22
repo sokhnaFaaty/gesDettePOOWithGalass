@@ -7,6 +7,7 @@ return [
     // -------- DETTES (lecture seule pour l'instant) --------
     '/dettes'                 => ['App\Controllers\DetteController', 'index'],
     '/dettes/non-soldees'     => ['App\Controllers\DetteController', 'nonSoldees'],
+    '/dettes/soldees'         => ['App\Controllers\DetteController', 'soldees'],
     '/dettes/client/:id'      => ['App\Controllers\DetteController', 'client'],
 
     // -------- CLIENTS (CRUD + recherche) - réservé à l'admin --------
