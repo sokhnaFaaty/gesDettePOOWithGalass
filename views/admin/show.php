@@ -1,79 +1,81 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html><!-- Document HTML5 -->
+<html lang="fr"><!-- Racine du document, en français -->
 <head>
-    <meta charset="UTF-8">
-    <title>Fiche client</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-        h1 { color: #2c3e50; }
-        .nav { margin-bottom: 20px; }
-        .nav a { margin-right: 15px; text-decoration: none; color: #34495e; font-weight: bold; }
-        .nav a:hover { color: #2ecc71; }
-        .fiche { display: flex; gap: 25px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; align-items: center; }
-        .avatar { width: 80px; height: 80px; border-radius: 50%; background: #ecf0f1; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #95a5a6; flex-shrink: 0; }
-        .infos p { margin: 4px 0; }
-        .infos .label { color: #7f8c8d; display: inline-block; width: 90px; }
-        .etat { padding: 3px 8px; border-radius: 10px; font-size: 12px; color: #fff; }
-        .etat-solvable { background-color: #2ecc71; }
-        .etat-non-solvable { background-color: #e74c3c; }
-        .etat-nouveau { background-color: #95a5a6; }
-        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #34495e; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .etat-dette { padding: 3px 8px; border-radius: 10px; font-size: 12px; color: #fff; }
-        .etat-dette-soldee { background-color: #2ecc71; }
-        .etat-dette-non-soldee { background-color: #e67e22; }
-    </style>
+    <meta charset="UTF-8"><!-- Encodage des caractères -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- Page adaptée aux mobiles -->
+    <title>Fiche client</title><!-- Titre de l'onglet du navigateur -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/app.css"><!-- Feuille de style commune -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"><!-- Icônes Font Awesome -->
 </head>
 <body>
-    <div class="nav">
-        <a href="<?= BASE_URL ?>/clients">&larr; Retour à la liste</a>
-        <a href="<?= BASE_URL ?>/clients/edit?id=<?= $client['id'] ?>">Modifier ce client</a>
+    <?php $active = 'clients'; include_once __DIR__ . '/../partials/sidebar.php'; ?><!-- Sidebar avec "Clients" actif -->
+
+    <div class="main-wrapper">
+        <?php include_once __DIR__ . '/../partials/topbar.php'; ?><!-- Barre du haut -->
+
+        <main class="page-content">
+            <div class="page-header"><!-- Bandeau titre + actions -->
+                <h2>Fiche client</h2><!-- Titre de la page -->
+                <div class="page-header-actions">
+                    <a href="<?= BASE_URL ?>/clients" class="btn-restore"><i class="fas fa-arrow-left"></i> Retour à la liste</a><!-- Retour vers la liste des clients -->
+                    <?php /* Modifier désactivé pour l'instant (demande du prof : seule l'action "Voir fiche" est disponible) */ ?>
+                    <?php if (false): // Bloc désactivé volontairement (jamais exécuté) ?>
+                    <a href="<?= BASE_URL ?>/clients/edit?id=<?= $client['id'] ?>" class="btn-new"><i class="fas fa-pen"></i> Modifier ce client</a><!-- Lien de modification (désactivé) -->
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="fiche"><!-- Carte affichant les informations du client -->
+                <div class="avatar-lg"><!-- Grand cercle contenant la photo ou l'icône par défaut -->
+                    <?php if (!empty($client['photo'])): // Si ce client a une photo enregistrée ?>
+                        <img src="<?= BASE_URL ?>/uploads/clients/<?= htmlspecialchars($client['photo']) ?>" alt="Photo de <?= htmlspecialchars($client['prenom']) ?>"><!-- Affiche la vraie photo -->
+                    <?php else: // Sinon, pas de photo ?>
+                        <i class="fas fa-user"></i><!-- Icône générique -->
+                    <?php endif; ?>
+                </div>
+                <div class="infos"><!-- Bloc texte des informations -->
+                    <p><span class="label">Nom</span> <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?></p><!-- Prénom + nom -->
+                    <p><span class="label">Email</span> <?= htmlspecialchars($client['email']) ?></p><!-- Email -->
+                    <p><span class="label">Téléphone</span> <?= htmlspecialchars($client['telephone'] ?? '-') ?></p><!-- Téléphone, "-" si absent -->
+                    <p><span class="label">État</span>
+                        <?php $etatClass = 'etat-' . str_replace(' ', '-', $client['etat_client']); // Classe CSS du badge (espace remplacé par tiret) ?>
+                        <span class="etat <?= $etatClass ?>"><?= htmlspecialchars($client['etat_client']) ?></span><!-- Badge coloré selon l'état -->
+                    </p>
+                </div>
+            </div>
+
+            <span class="section-title">Liste des dettes</span><!-- Sous-titre de la section suivante -->
+
+            <div class="table-wrapper"><!-- Carte blanche contenant le tableau des dettes -->
+                <table class="data-table">
+                    <thead><!-- En-têtes des colonnes -->
+                        <tr>
+                            <th>Numéro</th><!-- Numéro de la dette -->
+                            <th>Montant</th><!-- Montant dû -->
+                            <th>Date</th><!-- Date de la dette -->
+                            <th>État</th><!-- Soldée ou non -->
+                        </tr>
+                    </thead>
+                    <tbody><!-- Corps du tableau : une ligne par dette -->
+                        <?php if (!empty($dettes)): // S'il existe au moins une dette pour ce client ?>
+                            <?php foreach ($dettes as $d): // Boucle sur chaque dette ?>
+                                <?php $etatDetteClass = 'etat-dette-' . str_replace(' ', '-', $d['etat_dette']); // Classe CSS du badge (ex: etat-dette-non-soldee) ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($d['numero']) ?></td><!-- Numéro de la dette -->
+                                    <td><?= number_format((float) $d['montant'], 0, ',', ' ') ?></td><!-- Montant formaté (séparateur de milliers = espace) -->
+                                    <td><?= htmlspecialchars((new DateTime($d['date']))->format('d/m/y')) ?></td><!-- Date reformatée en jj/mm/aa -->
+                                    <td><span class="etat-dette <?= $etatDetteClass ?>"><?= htmlspecialchars($d['etat_dette']) ?></span></td><!-- Badge coloré selon l'état de la dette -->
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: // Aucune dette enregistrée pour ce client ?>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #7f8c8d; padding: 24px;">Aucune dette enregistrée.</td><!-- Message affiché à la place du tableau vide -->
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
-
-    <h1>Fiche client</h1>
-
-    <div class="fiche">
-        <div class="avatar">&#128100;</div>
-        <div class="infos">
-            <p><span class="label">Nom</span> <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?></p>
-            <p><span class="label">Email</span> <?= htmlspecialchars($client['email']) ?></p>
-            <p><span class="label">Téléphone</span> <?= htmlspecialchars($client['telephone'] ?? '-') ?></p>
-            <p><span class="label">État</span>
-                <?php $etatClass = 'etat-' . str_replace(' ', '-', $client['etat_client']); ?>
-                <span class="etat <?= $etatClass ?>"><?= htmlspecialchars($client['etat_client']) ?></span>
-            </p>
-        </div>
-    </div>
-
-    <h2>Liste des dettes</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Numéro</th>
-                <th>Montant</th>
-                <th>Date</th>
-                <th>État</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($dettes)): ?>
-                <?php foreach ($dettes as $d): ?>
-                    <?php $etatDetteClass = 'etat-dette-' . str_replace(' ', '-', $d['etat_dette']); ?>
-                    <tr>
-                        <td><?= htmlspecialchars($d['numero']) ?></td>
-                        <td><?= number_format((float) $d['montant'], 0, ',', ' ') ?></td>
-                        <td><?= htmlspecialchars((new DateTime($d['date']))->format('d/m/y')) ?></td>
-                        <td><span class="etat-dette <?= $etatDetteClass ?>"><?= htmlspecialchars($d['etat_dette']) ?></span></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #7f8c8d;">Aucune dette enregistrée.</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
 </body>
 </html>

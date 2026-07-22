@@ -1,5 +1,5 @@
 <?php
-namespace App\Core;
+namespace App\Core; // Ce fichier appartient au namespace App\Core
 
 class Controller {
     /**

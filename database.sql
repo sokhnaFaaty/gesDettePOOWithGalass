@@ -17,8 +17,12 @@ CREATE TABLE utilisateur (
     mot_de_passe VARCHAR(255) NOT NULL,
     telephone    VARCHAR(20),
     role         role_utilisateur NOT NULL DEFAULT 'client',
-    etat_client  etat_client      NOT NULL DEFAULT 'nouveau'
+    etat_client  etat_client      NOT NULL DEFAULT 'nouveau',
+    photo        VARCHAR(255)
 );
+
+-- Si la table existe déjà (base créée avant l'ajout de la photo de profil) :
+-- ALTER TABLE utilisateur ADD COLUMN IF NOT EXISTS photo VARCHAR(255);
 
 -- 3. Table dette (le côté "0..*", elle porte la clé étrangère)
 CREATE TABLE dette (

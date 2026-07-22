@@ -73,5 +73,5 @@ if (!$matched) {
         <p>La page demandée n'existe pas.</p>
         <p><a href='" . BASE_URL . "/clients'>Retour à l'accueil</a></p>
     </body>
-    </html>";
+    </html>"; // Page HTML minimale affichée en cas de route introuvable
 }

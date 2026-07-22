@@ -1,9 +1,10 @@
 <?php
-namespace App\Models;
+namespace App\Models; // Ce fichier appartient au namespace App\Models
 
 use App\Core\Model;
 use PDO;
 
+// Modèle représentant la table "dette" (une dette appartient toujours à un utilisateur/client)
 class DetteModel extends Model {
     // Schéma partagé : table "dette", clients = utilisateur (role = 'client')
     protected $table = 'dette';
@@ -134,7 +135,7 @@ class DetteModel extends Model {
         $stmt = $this->db->prepare(
             "SELECT * FROM {$this->table} WHERE id_utilisateur = :id ORDER BY date DESC"
         );
-        $stmt->execute([':id' => $idUtilisateur]);
-        return $stmt->fetchAll();
+        $stmt->execute([':id' => $idUtilisateur]); // Exécute en liant l'id du client recherché
+        return $stmt->fetchAll(); // Renvoie toutes les dettes trouvées sous forme de tableau
     }
 }
