@@ -1,6 +1,6 @@
-<?php $title = 'Dettes non soldées'; ?>
+<?php $title = 'Dettes soldées'; ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2><i class="fas fa-exclamation-triangle"></i> Dettes non soldées</h2>
+    <h2><i class="fas fa-check-circle"></i> Dettes soldées</h2>
     <a href="<?= url('dettes') ?>" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Toutes les dettes</a>
 </div>
 
@@ -17,7 +17,7 @@
             </thead>
             <tbody>
                 <?php if (empty($dettes)): ?>
-                    <tr><td colspan="4" class="text-center text-muted">Aucune dette non soldée.</td></tr>
+                    <tr><td colspan="4" class="text-center text-muted">Aucune dette soldée.</td></tr>
                 <?php else: ?>
                     <?php foreach ($dettes as $dette): ?>
                     <tr>
@@ -32,18 +32,18 @@
         </table>
 
         <?php if ($totalPages > 1): ?>
-        <nav aria-label="Pagination des dettes non soldées">
+        <nav aria-label="Pagination des dettes soldées">
             <ul class="pagination justify-content-center mb-0">
                 <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                    <a class="page-link" href="<?= url('dettes/non-soldees?page=' . ($page - 1)) ?>">&laquo;</a>
+                    <a class="page-link" href="<?= url('dettes/soldees?page=' . ($page - 1)) ?>">&laquo;</a>
                 </li>
                 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
                 <li class="page-item <?= $p === $page ? 'active' : '' ?>">
-                    <a class="page-link" href="<?= url('dettes/non-soldees?page=' . $p) ?>"><?= $p ?></a>
+                    <a class="page-link" href="<?= url('dettes/soldees?page=' . $p) ?>"><?= $p ?></a>
                 </li>
                 <?php endfor; ?>
                 <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                    <a class="page-link" href="<?= url('dettes/non-soldees?page=' . ($page + 1)) ?>">&raquo;</a>
+                    <a class="page-link" href="<?= url('dettes/soldees?page=' . ($page + 1)) ?>">&raquo;</a>
                 </li>
             </ul>
         </nav>
