@@ -6,6 +6,12 @@ return [
     // Page d'accueil -> connexion : quand on visite "/", on affiche directement le formulaire de connexion
     '/'                 => ['App\Controllers\UtilisateurController', 'login'],
 
+    // -------- DETTES (lecture seule pour l'instant) --------
+    '/dettes'                 => ['App\Controllers\DetteController', 'index'],
+    '/dettes/non-soldees'     => ['App\Controllers\DetteController', 'nonSoldees'],
+    '/dettes/soldees'         => ['App\Controllers\DetteController', 'soldees'],
+    '/dettes/client/:id'      => ['App\Controllers\DetteController', 'client'],
+
     // -------- CLIENTS (CRUD + recherche) - réservé à l'admin --------
     '/clients'          => ['App\Controllers\UtilisateurController', 'index'],   // Liste des clients (recherche + pagination)
     '/clients/create'   => ['App\Controllers\UtilisateurController', 'create'],  // Affiche le formulaire d'ajout d'un client
@@ -20,7 +26,7 @@ return [
     '/profil'           => ['App\Controllers\UtilisateurController', 'profil'], // Fiche du client connecté (ses infos + ses dettes)
 
     // -------- CONNEXION --------
-    '/login'            => ['App\Controllers\UtilisateurController', 'login'],        // Affiche le formulaire de connexion
-    '/authenticate'     => ['App\Controllers\UtilisateurController', 'authenticate'], // Traite la soumission du formulaire de connexion (POST)
-    '/logout'           => ['App\Controllers\UtilisateurController', 'logout'],       // Déconnecte l'utilisateur (détruit la session)
-]; // Fin du tableau des routes, renvoyé à public/index.php via require_once
+    '/login'            => ['App\Controllers\UtilisateurController', 'login'],
+    '/authenticate'     => ['App\Controllers\UtilisateurController', 'authenticate'],
+    '/logout'           => ['App\Controllers\UtilisateurController', 'logout'],
+];

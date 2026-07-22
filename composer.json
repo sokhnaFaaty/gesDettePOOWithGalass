@@ -2,7 +2,7 @@
     "name": "home-pc/ges-dette-poo-with-galass",
     "autoload": {
         "psr-4": {
-            "HomePc\\GesDettePooWithGalass\\": "src/"
+            "App\\": "src/"
         }
     },
     "authors": [

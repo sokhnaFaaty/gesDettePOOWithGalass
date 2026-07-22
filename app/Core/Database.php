@@ -14,13 +14,12 @@ class Database {
     private function __construct() {
         $config = require __DIR__ . '/../../config/database.php'; // Charge le tableau de paramètres de connexion
         try {
-            // Construction de la chaîne DSN (Data Source Name) attendue par PDO pour PostgreSQL
-            $dsn = "pgsql:host=" . $config['host'] .                                  // Adresse du serveur
-                   ";port=" . ($config['port'] ?? '5432') .                           // Port (5432 par défaut si absent)
-                   ";dbname=" . $config['db_name'] .                                  // Nom de la base
-                   ";options='--client_encoding=" . $config['charset'] . "'";         // Encodage des caractères
+            // Remplacement du DSN MySQL par PostgreSQL
+            $dsn = "pgsql:host=" . $config['host'] . 
+                   ";port=" . ($config['port'] ?? '5432') . 
+                   ";dbname=" . $config['db_name'] . 
+                   ";options='--client_encoding=" . $config['charset'] . "'";
 
-            // Ouvre la connexion PDO avec les identifiants et quelques options de sécurité/confort
             $this->conn = new PDO($dsn, $config['username'], $config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,           // Les erreurs SQL lèvent des exceptions PHP
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,      // Les résultats sont renvoyés en tableaux associatifs

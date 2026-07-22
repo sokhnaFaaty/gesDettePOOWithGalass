@@ -271,3 +271,4 @@ class UtilisateurController extends Controller {
         $this->redirect('/login'); // Redirige vers la page de connexion
     }
 }
+?>

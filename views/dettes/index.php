@@ -1,50 +1,95 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Liste des Filières</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-        h1 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #34495e; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .nav { margin-bottom: 20px; }
-        .nav a { margin-right: 15px; text-decoration: none; color: #34495e; font-weight: bold; }
-        .nav a:hover { color: #2ecc71; }
-    </style>
-</head>
-<body>
-    <div class="nav">
-        <a href="<?= BASE_URL ?>/classes">Classes</a> | 
-        <a href="<?= BASE_URL ?>/filieres">Filières</a> | 
-        <a href="<?= BASE_URL ?>/niveaux">Niveaux</a>
+<?php
+$title = 'Liste des dettes';
+// Query string qui conserve les filtres actifs dans les liens de pagination
+$qs = fn($p) => '?' . http_build_query([
+    'etat_client' => $etatClient,
+    'etat_dette'  => $etatDette,
+    'page'        => $p,
+]);
+?>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="fas fa-file-invoice"></i> Dettes</h2>
+    <div>
+        <a href="<?= url('dettes/non-soldees') ?>" class="btn btn-warning">
+            <i class="fas fa-exclamation-triangle"></i> Non soldées
+        </a>
+        <a href="<?= url('dettes/soldees') ?>" class="btn btn-success">
+            <i class="fas fa-check-circle"></i> Soldées
+        </a>
     </div>
+</div>
 
-    <h1>Gestion des Filières</h1>
+<form method="GET" action="<?= url('dettes') ?>" class="row g-2 align-items-center mb-3">
+    <div class="col-auto">
+        <select name="etat_client" class="form-select">
+            <option value="">-- État client --</option>
+            <option value="nouveau"      <?= $etatClient === 'nouveau'      ? 'selected' : '' ?>>Nouveau</option>
+            <option value="solvable"     <?= $etatClient === 'solvable'     ? 'selected' : '' ?>>Solvable</option>
+            <option value="non solvable" <?= $etatClient === 'non solvable' ? 'selected' : '' ?>>Non solvable</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="etat_dette" class="form-select">
+            <option value="">-- État dette --</option>
+            <option value="non soldee" <?= $etatDette === 'non soldee' ? 'selected' : '' ?>>Non soldée</option>
+            <option value="soldee"     <?= $etatDette === 'soldee'     ? 'selected' : '' ?>>Soldée</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
+        <a href="<?= url('dettes') ?>" class="btn btn-outline-secondary">Réinitialiser</a>
+    </div>
+</form>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Libellé</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($filieres)): ?>
-                <?php foreach ($filieres as $filiere): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($filiere['id']) ?></td>
-                        <td><?= htmlspecialchars($filiere['libelle']) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
                 <tr>
-                    <td colspan="2" style="text-align: center; color: #7f8c8d;">Aucune filière enregistrée.</td>
+                    <th>N° Dette</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>État</th>
                 </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</body>
-</html>
+            </thead>
+            <tbody>
+                <?php if (empty($dettes)): ?>
+                    <tr><td colspan="5" class="text-center text-muted">Aucune dette ne correspond.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($dettes as $dette): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($dette['numero']) ?></td>
+                        <td><?= htmlspecialchars($dette['prenom'] . ' ' . $dette['nom']) ?></td>
+                        <td><?= date('d/m/Y', strtotime($dette['date'])) ?></td>
+                        <td><?= number_format((float) $dette['montant'], 0, ',', ' ') ?> FCFA</td>
+                        <td>
+                            <span class="badge <?= $dette['etat_dette'] === 'soldee' ? 'badge-success' : 'badge-warning' ?>">
+                                <?= htmlspecialchars($dette['etat_dette']) ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <?php if ($totalPages > 1): ?>
+        <nav aria-label="Pagination des dettes">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                    <a class="page-link" href="<?= url('dettes' . $qs($page - 1)) ?>">&laquo;</a>
+                </li>
+                <?php for ($p = 1; $p <= $totalPages; $p++): ?>
+                <li class="page-item <?= $p === $page ? 'active' : '' ?>">
+                    <a class="page-link" href="<?= url('dettes' . $qs($p)) ?>"><?= $p ?></a>
+                </li>
+                <?php endfor; ?>
+                <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                    <a class="page-link" href="<?= url('dettes' . $qs($page + 1)) ?>">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+        <?php endif; ?>
+    </div>
+</div>
