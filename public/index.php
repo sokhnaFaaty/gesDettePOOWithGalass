@@ -4,7 +4,7 @@ session_start();
 
 // Définir les constantes
 define('ROOT', dirname(__DIR__) . '/');
-define('WEBROOT', '/gesDette-poo/public/'); // ⚠️ Adapter selon votre structure
+define('WEBROOT', '/gesDette-poo/public/'); //  Adapter selon votre structure
 
 // Déterminer BASE_URL automatiquement
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';

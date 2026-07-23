@@ -16,7 +16,7 @@ return [
     '/clients'          => ['App\Controllers\UtilisateurController', 'index'],   // Liste des clients (recherche + pagination)
     '/clients/create'   => ['App\Controllers\UtilisateurController', 'create'],  // Affiche le formulaire d'ajout d'un client
     '/clients/store'    => ['App\Controllers\UtilisateurController', 'store'],   // Traite la soumission du formulaire d'ajout (POST)
-    // Modifier / Supprimer désactivés pour l'instant (demande du prof : seule l'action "Voir fiche" est disponible)
+    
     // '/clients/edit'     => ['App\Controllers\UtilisateurController', 'edit'],    // Affiche le formulaire de modification d'un client
     // '/clients/update'   => ['App\Controllers\UtilisateurController', 'update'],  // Traite la soumission du formulaire de modification (POST)
     // '/clients/delete'   => ['App\Controllers\UtilisateurController', 'delete'],  // Supprime un client

@@ -32,4 +32,23 @@ class Controller {
         header("Location: " . $base . '/' . ltrim($url, '/'));
         exit;
     }
+
+    /**
+     * Vérifie que l'utilisateur est connecté (et, si précisé, qu'il a le bon rôle).
+     * Redirige vers /login sinon. $roles peut être une chaîne ou un tableau de rôles autorisés.
+     */
+    protected function requireAuth($roles = null) {
+        if (empty($_SESSION['user'])) {
+            $this->redirect('/login');
+        }
+
+        if ($roles !== null) {
+            $roles = (array) $roles;
+            if (!in_array($_SESSION['user']['role'], $roles, true)) {
+                $this->redirect('/login');
+            }
+        }
+
+        return $_SESSION['user'];
+    }
 }
