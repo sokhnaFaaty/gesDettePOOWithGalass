@@ -192,7 +192,7 @@ class UtilisateurController extends Controller {
         if (!$client) {                     // Si aucun client ne correspond
             die("Client introuvable.");     // On arrête avec un message d'erreur simple
         }
-        $dettes = $this->detteModel->findByUtilisateur($id); // Récupère toutes les dettes liées à ce client
+        $dettes = $this->detteModel->getByClientId($id); // Récupère toutes les dettes liées à ce client
 
         $this->view('admin/show', [ // Affiche la fiche complète du client
             'client' => $client,
@@ -208,7 +208,7 @@ class UtilisateurController extends Controller {
         $user = $this->requireAuth('client'); // Accès réservé au rôle client ; renvoie les infos de session de l'utilisateur connecté
 
         $client = $this->model->find($user['id']);              // Récupère les infos complètes du client connecté (via son id de session)
-        $dettes = $this->detteModel->findByUtilisateur($user['id']); // Récupère les dettes de ce même client
+        $dettes = $this->detteModel->getByClientId($user['id']); // Récupère les dettes de ce même client
 
         $this->view('client/dashboard', [ // Affiche le tableau de bord du client connecté
             'client' => $client,

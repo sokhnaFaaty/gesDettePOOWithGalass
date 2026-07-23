@@ -18,7 +18,7 @@
                 <h2>Fiche client</h2><!-- Titre de la page -->
                 <div class="page-header-actions">
                     <a href="<?= BASE_URL ?>/clients" class="btn-restore"><i class="fas fa-arrow-left"></i> Retour à la liste</a><!-- Retour vers la liste des clients -->
-                    <?php /* Modifier désactivé pour l'instant (demande du prof : seule l'action "Voir fiche" est disponible) */ ?>
+                    <?php /*seule l'action "Voir fiche" est disponible) */ ?>
                     <?php if (false): // Bloc désactivé volontairement (jamais exécuté) ?>
                     <a href="<?= BASE_URL ?>/clients/edit?id=<?= $client['id'] ?>" class="btn-new"><i class="fas fa-pen"></i> Modifier ce client</a><!-- Lien de modification (désactivé) -->
                     <?php endif; ?>
